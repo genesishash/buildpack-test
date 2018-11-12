@@ -70,4 +70,86 @@ http {
 			try_files @heroku-fcgi @heroku-fcgi;
 		}
 	}
+
+
+  server {
+    server_name dir1.unitednaturals.com;
+    listen <?=getenv('PORT')?:'8080'?>;
+    port_in_redirect off;
+    location @heroku-fcgi {
+      include fastcgi_params;
+
+      fastcgi_split_path_info ^(.+\.php)(/.*)$;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      # try_files resets $fastcgi_path_info, see http://trac.nginx.org/nginx/ticket/321, so we use the if instead
+      fastcgi_param PATH_INFO $fastcgi_path_info if_not_empty;
+      # pass actual request host instead of localhost
+      fastcgi_param SERVER_NAME $host;
+
+      if (!-f $document_root$fastcgi_script_name) {
+        # check if the script exists
+        # otherwise, /foo.jpg/bar.php would get passed to FPM, which wouldn't run it as it's not in the list of allowed extensions, but this check is a good idea anyway, just in case
+        return 404;
+      }
+
+      fastcgi_pass heroku-fcgi;
+    }
+    root "<?=getenv('DOCUMENT_ROOT')?:getenv('HEROKU_APP_DIR')?:getcwd()?>/dir1";
+    error_log stderr;
+    access_log /tmp/heroku.nginx_access.<?=getenv('PORT')?:'8080'?>.log;
+
+    include "<?=getenv('HEROKU_PHP_NGINX_CONFIG_INCLUDE')?>";
+
+    # restrict access to hidden files, just in case
+    location ~ /\. {
+      deny all;
+    }
+
+    # default handling of .php
+    location ~ \.php {
+      try_files @heroku-fcgi @heroku-fcgi;
+    }
+  }
+
+  server {
+    server_name dir2.unitednaturals.com;
+    listen <?=getenv('PORT')?:'8080'?>;
+    port_in_redirect off;
+    location @heroku-fcgi {
+      include fastcgi_params;
+
+      fastcgi_split_path_info ^(.+\.php)(/.*)$;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      # try_files resets $fastcgi_path_info, see http://trac.nginx.org/nginx/ticket/321, so we use the if instead
+      fastcgi_param PATH_INFO $fastcgi_path_info if_not_empty;
+      # pass actual request host instead of localhost
+      fastcgi_param SERVER_NAME $host;
+
+      if (!-f $document_root$fastcgi_script_name) {
+        # check if the script exists
+        # otherwise, /foo.jpg/bar.php would get passed to FPM, which wouldn't run it as it's not in the list of allowed extensions, but this check is a good idea anyway, just in case
+        return 404;
+      }
+
+      fastcgi_pass heroku-fcgi;
+    }
+    root "<?=getenv('DOCUMENT_ROOT')?:getenv('HEROKU_APP_DIR')?:getcwd()?>/dir2";
+    error_log stderr;
+    access_log /tmp/heroku.nginx_access.<?=getenv('PORT')?:'8080'?>.log;
+
+    include "<?=getenv('HEROKU_PHP_NGINX_CONFIG_INCLUDE')?>";
+
+    # restrict access to hidden files, just in case
+    location ~ /\. {
+      deny all;
+    }
+
+    # default handling of .php
+    location ~ \.php {
+      try_files @heroku-fcgi @heroku-fcgi;
+    }
+  }
+
 }
+
+
