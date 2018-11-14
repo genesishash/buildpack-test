@@ -73,7 +73,7 @@ http {
 
 
   server {
-    server_name dir1.unitednaturals.com;
+    server_name xxx.unitednaturals.com;
     listen <?=getenv('PORT')?:'8080'?>;
     port_in_redirect off;
     location @heroku-fcgi {
@@ -94,7 +94,7 @@ http {
 
       fastcgi_pass heroku-fcgi;
     }
-    root "<?=getenv('DOCUMENT_ROOT')?:getenv('HEROKU_APP_DIR')?:getcwd()?>/dir1";
+    root "<?=getenv('DOCUMENT_ROOT')?:getenv('HEROKU_APP_DIR')?:getcwd()?>/unsub";
     error_log stderr;
     access_log /tmp/heroku.nginx_access.<?=getenv('PORT')?:'8080'?>.log;
 
